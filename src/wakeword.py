@@ -11,13 +11,17 @@ import std_srvs.srv as srv
 
 import time
 
+import snowboydecoder
+
+import platform
+from subprocess import Popen
+
+
 def play_audio(filename: str):
     """
     Args:
         filename: Audio filename
     """
-    import platform
-    from subprocess import Popen
 
     player = 'play' if platform.system() == 'Darwin' else 'aplay'
     Popen([player, '-q', filename])
@@ -29,11 +33,27 @@ def activate_notify():
 
     play_audio(audio)
 
+class Precise():
+	def __init__(self, model: str, callback):
+		engine = PreciseEngine(directory+'/resources/precise-engine', directory+model)
+		self.runner = PreciseRunner(engine, on_activation=callback)
+
+	def start(self):
+		self.runner.start()
+
+class Snowboy():
+	def __init__(self, model: str, callback):
+		self.detector = snowboydecoder.HotwordDetector(directory+model, sensitivity=0.6)
+		self.callback = callback
+
+	def start(self):
+		self.detector.start(detected_callback=self.callback, sleep_time=0.03)
+
 class WakeWord():
 	def __init__(self):
 		print('Starting... ')
-		engine = PreciseEngine(directory+'/resources/precise-engine', directory+'/resources/zordon.pb')
-		self.runner = PreciseRunner(engine, on_activation=self.hotword_detected)
+		#self.engine = Precise('/resources/hey-mycroft-2', self.hotword_detected)
+		self.engine = Snowboy('/resources/computer.umdl', self.hotword_detected)
 		rospy.init_node('wake_word', anonymous=True)
 		self.service = rospy.Service('roboga/wake_word', srv.Empty, self.activate)
 		self.pub = rospy.Publisher('roboga/wake_work/detected', Empty)
@@ -50,7 +70,7 @@ class WakeWord():
 
 	def run(self):
 		print("starting wakeword listener...")
-		self.runner.start()
+		self.engine.start()
 
 	def hotword_detected(self):
 		if(self.active):
