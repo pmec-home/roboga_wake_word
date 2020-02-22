@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -55,8 +55,8 @@ class WakeWord():
 		#self.engine = Precise('/resources/hey-mycroft-2', self.hotword_detected)
 		self.engine = Snowboy('/resources/computer.umdl', self.hotword_detected)
 		rospy.init_node('wake_word', anonymous=True)
-		self.service = rospy.Service('roboga/wake_word', srv.Empty, self.activate)
-		self.pub = rospy.Publisher('roboga/wake_work/detected', Empty)
+		self.service = rospy.Service('zordon/wake_word', srv.Empty, self.activate)
+		self.pub = rospy.Publisher('zordon/wake_work/detected', Empty)
 		self.active = False
 		self.detected = False
 
